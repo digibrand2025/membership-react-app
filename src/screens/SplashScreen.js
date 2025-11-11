@@ -6,7 +6,7 @@ import { COLORS } from '../constants/config';
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace('MemberSearch');
+      navigation.replace('Main');
     }, 2000);
 
     return () => clearTimeout(timer);
