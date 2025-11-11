@@ -2,14 +2,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { COLORS, STATUS_COLORS } from '../constants/config';
 import { memberService } from '../services/api';
@@ -50,149 +51,154 @@ const MemberSearchScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header with curved background */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => navigation.openDrawer()}
-        >
-          <Ionicons name="menu" size={28} color={COLORS.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Membership Search</Text>
-        <View style={styles.menuButton} />
+        <View style={styles.headerContent}>
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => navigation.openDrawer()}
+            >
+              <Ionicons name="menu" size={24} color={COLORS.white} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.notificationButton}>
+              <Ionicons name="notifications-outline" size={22} color={COLORS.white} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.headerText}>
+            <Text style={styles.greeting}>Good morning!</Text>
+            <Text style={styles.headerTitle}>Member Search</Text>
+          </View>
+        </View>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Search Card */}
-        <View style={styles.searchCard}>
-          <Text style={styles.searchLabel}>Enter Membership ID</Text>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color={COLORS.gray} style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="e.g., M001"
-              value={membershipId}
-              onChangeText={setMembershipId}
-              autoCapitalize="characters"
-              returnKeyType="search"
-              onSubmitEditing={handleSearch}
-            />
-            {membershipId.length > 0 && (
-              <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-                <Ionicons name="close-circle" size={20} color={COLORS.gray} />
-              </TouchableOpacity>
-            )}
-          </View>
-          <TouchableOpacity
-            style={[styles.searchButton, loading && styles.searchButtonDisabled]}
-            onPress={handleSearch}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={COLORS.white} />
-            ) : (
-              <Text style={styles.searchButtonText}>Search</Text>
-            )}
-          </TouchableOpacity>
+        {/* Search Input */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={COLORS.gray} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Name or Member ID"
+            value={membershipId}
+            onChangeText={setMembershipId}
+            autoCapitalize="characters"
+            returnKeyType="search"
+            onSubmitEditing={handleSearch}
+          />
+          {membershipId.length > 0 && (
+            <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
+              <Ionicons name="close" size={18} color={COLORS.gray} />
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* Member Details Card */}
-        {memberData && (
-          <View style={styles.resultCard}>
-            {/* Status Badge */}
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusColor(memberData.status.status_color) },
-              ]}
-            >
-              <Text style={styles.statusText}>
-                {memberData.status.membership_status}
-              </Text>
-            </View>
-
-            {/* Member Info */}
-            <View style={styles.infoSection}>
-              <Text style={styles.memberName}>{memberData.member.full_name}</Text>
-              <Text style={styles.membershipIdText}>
-                ID: {memberData.member.membership_id}
-              </Text>
+        {/* Member Card */}
+        {memberData ? (
+          <View style={styles.memberCard}>
+            {/* Member Header */}
+            <View style={styles.memberHeader}>
+              <Image
+                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBRt1mdqvmC6uYA4T_IRy4Mhb_4rXM-w2D37gXdvhS2DMi_bJVsxIqtxm-Dt0V1qkZoqa_KaXJbuMowXDdmrMY_GkkVzPfvQpx2CgUOzuB_RaB7EsvJ8_fvrH7ztNhxiAanCDCQSqiig-997qBFH7K0isHMhSjk9fAr0FqX8sqtS09mq0PthmDewW3KRyU1q5gSymkuyQ5jSOKO8KAXkgMBNrNXaHKO3B5OxVf1qDiH5U3DfN4rYSIQ0jxmRNYKmeQH6D-JMIzmpH-W' }}
+                style={styles.avatar}
+              />
+              <View style={styles.memberInfo}>
+                <Text style={styles.memberName}>{memberData.member.full_name}</Text>
+                <Text style={styles.memberId}>ID: {memberData.member.membership_id}</Text>
+              </View>
             </View>
 
             {/* Details Grid */}
             <View style={styles.detailsGrid}>
-              <InfoRow
-                icon="location"
+              {/* Personal Info */}
+              <DetailRow
+                icon="person-outline"
+                label="Personal Info"
+                value={memberData.member.email || 'N/A'}
+              />
+              
+              {/* Division */}
+              <DetailRow
+                icon="business-outline"
                 label="Division"
                 value={memberData.member.division || 'N/A'}
               />
-              <InfoRow
-                icon="call"
+              
+              {/* Payment Info */}
+              {memberData.member.last_payment_date && (
+                <DetailRow
+                  icon="card-outline"
+                  label="Payment"
+                  value={`Last: ${memberData.member.last_payment_date}`}
+                />
+              )}
+              
+              {/* Status */}
+              <View style={styles.detailRow}>
+                <View style={styles.detailIcon}>
+                  <Ionicons name="checkmark-circle-outline" size={20} color={COLORS.primary} />
+                </View>
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Status</Text>
+                  <View style={[
+                    styles.statusBadge,
+                    { backgroundColor: getStatusColor(memberData.status.status_color) + '20' }
+                  ]}>
+                    <View style={[
+                      styles.statusDot,
+                      { backgroundColor: getStatusColor(memberData.status.status_color) }
+                    ]} />
+                    <Text style={[
+                      styles.statusText,
+                      { color: getStatusColor(memberData.status.status_color) }
+                    ]}>
+                      {memberData.status.membership_status}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Mobile */}
+              <DetailRow
+                icon="call-outline"
                 label="Mobile"
                 value={memberData.member.mobile_number || 'N/A'}
               />
-              <InfoRow
-                icon="calendar"
-                label="Date of Birth"
-                value={memberData.member.date_of_birth || 'N/A'}
-              />
-              <InfoRow
-                icon="people"
+
+              {/* Dependents */}
+              <DetailRow
+                icon="people-outline"
                 label="Dependents"
                 value={memberData.member.dependent_count.toString()}
               />
-            </View>
 
-            {/* Payment Info */}
-            {memberData.member.last_payment_date && (
-              <View style={styles.paymentSection}>
-                <Text style={styles.sectionTitle}>Payment Information</Text>
-                <InfoRow
+              {/* Valid Until */}
+              {memberData.status.grace_period_end && (
+                <DetailRow
                   icon="calendar-outline"
-                  label="Last Payment"
-                  value={memberData.member.last_payment_date}
-                />
-                <InfoRow
-                  icon="cash"
-                  label="Amount Paid"
-                  value={`Rs. ${memberData.member.amount_paid || '0.00'}`}
-                />
-                <InfoRow
-                  icon="time"
                   label="Valid Until"
-                  value={memberData.status.grace_period_end || 'N/A'}
+                  value={memberData.status.grace_period_end}
                 />
-                {memberData.status.days_remaining !== 0 && (
-                  <InfoRow
-                    icon="hourglass"
-                    label="Days Remaining"
-                    value={
-                      memberData.status.days_remaining > 0
-                        ? `${memberData.status.days_remaining} days`
-                        : `Expired ${Math.abs(memberData.status.days_remaining)} days ago`
-                    }
-                  />
-                )}
-              </View>
-            )}
-
-            {/* Status Details */}
-            <View style={styles.statusDetails}>
-              <Ionicons name="information-circle" size={20} color={COLORS.primary} />
-              <Text style={styles.statusDetailsText}>
-                {memberData.status.status_details}
-              </Text>
+              )}
             </View>
           </View>
+        ) : (
+          /* Empty State */
+          !loading && (
+            <View style={styles.emptyState}>
+              <Ionicons name="search-outline" size={64} color={COLORS.lightGray} />
+              <Text style={styles.emptyStateTitle}>No Search Results</Text>
+              <Text style={styles.emptyStateText}>
+                Enter a membership ID above to find member information
+              </Text>
+            </View>
+          )
         )}
 
-        {/* Empty State */}
-        {!memberData && !loading && (
-          <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={80} color={COLORS.gray} />
-            <Text style={styles.emptyStateText}>
-              Enter a membership ID to search
-            </Text>
+        {/* Loading State */}
+        {loading && (
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Searching for member...</Text>
           </View>
         )}
       </ScrollView>
@@ -200,193 +206,225 @@ const MemberSearchScreen = ({ navigation }) => {
   );
 };
 
-// Helper Component
-const InfoRow = ({ icon, label, value }) => (
-  <View style={styles.infoRow}>
-    <View style={styles.infoLeft}>
-      <Ionicons name={icon} size={18} color={COLORS.gray} />
-      <Text style={styles.infoLabel}>{label}</Text>
+// Helper Component for Detail Rows
+const DetailRow = ({ icon, label, value }) => (
+  <View style={styles.detailRow}>
+    <View style={styles.detailIcon}>
+      <Ionicons name={icon} size={20} color={COLORS.primary} />
     </View>
-    <Text style={styles.infoValue}>{value}</Text>
+    <View style={styles.detailContent}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      <Text style={styles.detailValue} numberOfLines={1}>{value}</Text>
+    </View>
   </View>
 );
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.light,
+    backgroundColor: COLORS.backgroundLight,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: COLORS.primary,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    paddingBottom: 60,
+  },
+  headerContent: {
     paddingTop: 50,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   menuButton: {
     padding: 8,
-    width: 44,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notificationButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerText: {
+    marginBottom: 10,
+  },
+  greeting: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 4,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: COLORS.white,
+    letterSpacing: -0.5,
   },
   content: {
     flex: 1,
-    padding: 16,
-  },
-  searchCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  searchLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.dark,
-    marginBottom: 12,
+    paddingHorizontal: 20,
+    marginTop: -40,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.light,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 16,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    height: 56,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 12,
   },
   searchInput: {
     flex: 1,
-    height: 48,
+    height: 56,
     fontSize: 16,
     color: COLORS.dark,
   },
   clearButton: {
     padding: 4,
   },
-  searchButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchButtonDisabled: {
-    opacity: 0.6,
-  },
-  searchButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  resultCard: {
+  memberCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
     borderRadius: 20,
-    marginBottom: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
   },
-  statusText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  infoSection: {
-    marginBottom: 20,
-    paddingBottom: 20,
+  memberHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingBottom: 24,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.light,
+    borderBottomColor: COLORS.borderLight,
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginRight: 16,
+  },
+  memberInfo: {
+    flex: 1,
   },
   memberName: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '600',
     color: COLORS.dark,
     marginBottom: 4,
   },
-  membershipIdText: {
-    fontSize: 16,
+  memberId: {
+    fontSize: 14,
     color: COLORS.gray,
   },
   detailsGrid: {
-    marginBottom: 20,
+    gap: 20,
   },
-  infoRow: {
+  detailRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.light,
+    alignItems: 'flex-start',
   },
-  infoLeft: {
-    flexDirection: 'row',
+  detailIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 16,
+  },
+  detailContent: {
     flex: 1,
+    justifyContent: 'center',
   },
-  infoLabel: {
+  detailLabel: {
     fontSize: 14,
     color: COLORS.gray,
-    marginLeft: 8,
+    marginBottom: 4,
   },
-  infoValue: {
-    fontSize: 14,
-    fontWeight: '600',
+  detailValue: {
+    fontSize: 16,
+    fontWeight: '500',
     color: COLORS.dark,
   },
-  paymentSection: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.dark,
-    marginBottom: 12,
-  },
-  statusDetails: {
+  statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.light,
-    padding: 12,
-    borderRadius: 8,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
-  statusDetailsText: {
-    flex: 1,
-    marginLeft: 8,
-    fontSize: 14,
-    color: COLORS.dark,
-    lineHeight: 20,
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: 80,
+    paddingHorizontal: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.dark,
+    marginTop: 16,
+    marginBottom: 8,
   },
   emptyStateText: {
+    fontSize: 14,
+    color: COLORS.gray,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  loadingCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  loadingText: {
+    marginTop: 16,
     fontSize: 16,
     color: COLORS.gray,
-    marginTop: 16,
+    fontWeight: '500',
   },
 });
 

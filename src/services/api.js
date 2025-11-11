@@ -8,6 +8,7 @@ const api = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -18,6 +19,14 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Log the request for debugging
+    console.log('API Request:', {
+      method: config.method,
+      url: config.url,
+      data: config.data,
+    });
+    
     return config;
   },
   (error) => {
@@ -27,8 +36,13 @@ api.interceptors.request.use(
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response:', response.data);
+    return response;
+  },
   (error) => {
+    console.log('API Error:', error.response || error.message);
+    
     if (error.response) {
       // Server responded with error
       return Promise.reject(error.response.data);
